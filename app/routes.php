@@ -49,7 +49,11 @@ Route::post('/dataUpload', function(){
 
                         // format the time
                         $formattedTime = str_replace("\"","",substr($value[1], 5));
-
+                        echo '<pre>';
+                        print_r($value[1]);
+                        print_r($formattedTime);
+                        echo '</pre>';
+                        // exit;
                         // enter the BG level
                         $bgLevel = $value[2];
 
@@ -68,7 +72,10 @@ Route::post('/dataUpload', function(){
 //                print_r($results[0]);
                 $sqlInsert = '';
                 foreach($results as $item){
-                    DB::Insert("INSERT INTO BG (createdDate, createdTime, level, note) VALUES(?,?,?,?)", array($item[0],$item[1],$item[2],$item[3]));
+                   // DB::Insert( DB::raw("INSERT INTO BG (createdDate, createdTime, level, note) VALUES(?,?,?,?)", 
+                    //    array($item[0],STR_TO_DATE($item[1], '%l:%i %p'),$item[2],$item[3]));
+                    DB::Insert("INSERT INTO BG (createdDate, createdTime, level, note) VALUES(?,STR_TO_DATE(?,'%l:%i %p'),?,?)", 
+                        array($item[0],$item[1],$item[2],$item[3]));
                 }
 
 //                print_r(DB::select('select * from BG where 1'));
