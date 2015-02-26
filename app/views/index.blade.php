@@ -43,6 +43,8 @@ Type 1 Diabetes Visualization Prototype 1
                 <button id="viewmode" name="viewmode" class="viewmode btn btn-primary" data-value="2" value="2">Shape</button>
 
 
+                <button id="viewmode" name="viewmode" class="viewmode btn btn-primary" data-value="3" value="3">Overlay</button>
+
         </div>
 
     </div>
