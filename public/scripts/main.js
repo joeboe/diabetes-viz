@@ -606,8 +606,44 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         return rangeFunc(moment(date+' '+item).valueOf());
     }
 
+    //scale for 8 ticks for each day of the week
+    function scaleTimeOverlay(item){
+        // date = date.replace(/\b-\b/g, "/");
+        var beginning = 0
+        var ending = 7;
+        var rangeFunc = d3.scale.linear().domain([beginning, ending]).range([svgPadding*8, svgWidth - svgPadding]);
+        return rangeFunc(item).valueOf();
+    } 
+
+    function scaleWeek(item, date){
+        date = date.replace(/\b-\b/g, "/");
+        var dateMoment = moment(date + " " + item);
+        console.log(date);
+        console.log(item);
+        console.log(dateMoment.toDate());
+        console.log(dateMoment.valueOf());
+        var target = dateMoment.valueOf();
+
+        //set beginning of the week
+        var beginning = dateMoment;
+        beginning.subtract(beginning.day(), 'd');
+        beginning.startOf('day');
+        console.log(beginning.toDate());
+        var start = beginning.valueOf();
+
+
+        //set end of the week
+        var ending = beginning;
+        ending.add(6 , 'd');
+        ending.endOf('day');
+        var end = ending.valueOf()
+        console.log(ending.toDate());
+
+        var rangeFunc = d3.scale.linear().domain([start, end]).range([svgPadding*8, svgWidth - svgPadding]);
+        return rangeFunc(target);
+    }
+
     function drawScatterCanvas(svg, id, numOfWeeks){
-        alert("blah");
         if(!numOfWeeks){
             numOfWeeks = 1;
         }
@@ -768,39 +804,48 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
             numOfWeeks = 1;
         }
         // expands the svg height according to the # of weeks to be displayed
-        svg.style({'height': svgHeight*7 + 'px' });
+        svg.style({'height': svgHeight*4 + 'px' });
+
+        //addjust svg height and 
+        // svgHeight = svgHeight * 4;
+
+        //get width of the graph
+        var graphWidth = svgPadding*8 - svgWidth - svgPadding; 
 
         svg.select(".weekIndicator").remove();
+
+        //indicates the week on the right hand side
         svg.append('text')
             .text(function(){ return "Week " + parseInt(parseInt(svg.attr('id'))+1); })
             .attr({x: svgPadding*1-10+20, y: svgPadding-35, 'transform': 'rotate(90)', 'font-size': 25, "class": "weekIndicator"})
             .style({'fill':'#666666', 'stroke-width':0});
 
-        for(var i=0; i<7; i++){
-            svg.append('line')
-                .attr({x1: svgPadding*8, x2: svgWidth - svgPadding, y1: svgHeight - svgPadding + i * svgHeight, y2: svgHeight - svgPadding + i * svgHeight })
-                .style({'stroke': '#999', 'stroke-width': 1});
-            svg.append('line')
-                .attr({x1: svgPadding*8, x2: svgPadding*8, y1: svgHeight - svgPadding + i * svgHeight, y2: svgPadding + i * svgHeight })
-                .style({'stroke': '#999', 'stroke-width': 1});
-        }
+        //draw the axises
+        var i = 0;
+        svg.append('line')
+            .attr({x1: svgPadding*8, x2: svgWidth - svgPadding, y1: svgHeight - svgPadding + i * svgHeight, y2: svgHeight - svgPadding + i * svgHeight })
+            .style({'stroke': '#999', 'stroke-width': 1});
+        svg.append('line')
+            .attr({x1: svgPadding*8, x2: svgPadding*8, y1: svgHeight - svgPadding + i * svgHeight, y2: svgPadding + i * svgHeight })
+            .style({'stroke': '#999', 'stroke-width': 1});
 
         // draw ticks
         var ticksBG = [0, 50, 100, 150, 200, 250, 300, 350];
-        var ticksTime = ["12:00 AM","3:00 AM","6:00 AM","9:00 AM","12:00 PM","3:00 PM","6:00 PM","9:00 PM","11:59 PM"];
+        var ticksTimeNums = [0, 1, 2, 3, 4, 5, 6, 7];
+        var ticksTime = ["Sunday", "Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
 
-        for(var j=0; j<7; j++){
+        for(var j=0; j<1; j++){
             svg.append('rect')
-                .attr({x: scaleTimeHeatmap("06:00 AM", "2013-08-10"), y: svgPadding-10+j*svgHeight, width: scaleTimeHeatmap("09:00 AM", "2013-08-10") - scaleTimeHeatmap("06:00 AM", "2013-08-10"), "class": "breakfastBracket", "height": 149})
+                .attr({x: scaleTimeHeatmap("06:00 AM", "2013-08-10"), y: svgPadding-10+j*svgHeight, width: scaleTimeHeatmap("09:00 AM", "2013-08-10") - scaleTimeHeatmap("06:00 AM", "2013-08-10"), "class": "breakfastBracket", "height": svgHeight - svgPadding - 10})
                 .style({"fill": "#eeeeee"});
 
             svg.append('rect')
-                .attr({x: scaleTimeHeatmap("11:00 AM", "2013-08-10"), y: svgPadding-10+j*svgHeight, width: scaleTimeHeatmap("02:00 PM", "2013-08-10") - scaleTimeHeatmap("11:00 AM", "2013-08-10"), "class": "lunchBracket", "height": 149})
+                .attr({x: scaleTimeHeatmap("11:00 AM", "2013-08-10"), y: svgPadding-10+j*svgHeight, width: scaleTimeHeatmap("02:00 PM", "2013-08-10") - scaleTimeHeatmap("11:00 AM", "2013-08-10"), "class": "lunchBracket", "height": svgHeight - svgPadding - 10})
                 .style({"fill": "#eeeeee"});
 
             svg.append('rect')
-                .attr({x: scaleTimeHeatmap("05:00 PM", "2013-08-10"), y: svgPadding-10+j*svgHeight, width: scaleTimeHeatmap("08:00 PM", "2013-08-10") - scaleTimeHeatmap("05:00 PM", "2013-08-10"), "class": "dinnerBracket", "height": 149})
+                .attr({x: scaleTimeHeatmap("05:00 PM", "2013-08-10"), y: svgPadding-10+j*svgHeight, width: scaleTimeHeatmap("08:00 PM", "2013-08-10") - scaleTimeHeatmap("05:00 PM", "2013-08-10"), "class": "dinnerBracket", "height": svgHeight - svgPadding - 10})
                 .style({"fill": "#eeeeee"});
 
             svg.selectAll('text.BG'+j).data(ticksBG).enter().append('text')
@@ -812,17 +857,20 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                 .style({'stroke-width': '1px', 'stroke': '#999'});
 
 
-            svg.selectAll('line.ticksTime'+j).data(ticksTime).enter().append('line')
-                .attr({'x1': function(d,i){ return scaleTime(d, "2013/01/01")+'px';}, 'x2': function(d,i){ return scaleTime(d, "2013/01/01")+'px';}, 'y1': svgHeight - svgPadding + svgHeight*j, 'y2': svgHeight - svgPadding - 3 + j*svgHeight, 'class': 'ticksTime'+j })
+            svg.selectAll('line.ticksTimeNums'+j).data(ticksTimeNums).enter().append('line')
+                .attr({'x1': function(d,i){ return scaleTimeOverlay(d)+'px';},
+                    'x2': function(d,i){ return scaleTimeOverlay(d)+'px';}, 
+                    'y1': svgHeight - svgPadding + svgHeight*j, 
+                    'y2': svgHeight - svgPadding - 3 + j*svgHeight, 'class': 'ticksTime'+j })
                 .style({'stroke-width': '1px', 'stroke': '#999'});
 
-            svg.selectAll('text.time'+j).data(ticksTime).enter().append('text')
-                .text(function(d,i){ if(i != 8){ return moment('2013/01/01 '+d).format('h A');}else{ return (moment('2013/01/01 '+d).hour()+1)/2+ ' AM'; } })
-                .attr({'x': function(d,i){ return scaleTime(d, "2013/01/01") - 14+'px'; }, 'y': svgHeight - svgPadding + 15 + j*svgHeight, 'font-size': '9px', 'class': 'time'+j});
+            svg.selectAll('text.time'+j).data(ticksTimeNums).enter().append('text')
+                .text(function(d,i) { return ticksTime[i]})
+                .attr({'x': function(d,i){ return scaleTimeOverlay(d) - 14+'px'; }, 'y': svgHeight - svgPadding + 15 + j*svgHeight, 'font-size': '9px', 'class': 'time'+j});
         }
 
         // draw the normal range
-        for(var j=0; j<7; j++){
+        for(var j=0; j<1; j++){
             svg.append('rect')
                 .attr({'class':'normalrange', 'x': svgPadding*8, 'y': scaleBG(120, raw)+j*svgHeight, 'width': svgWidth - svgPadding*9, 'height': parseFloat(scaleBG(70, raw) - scaleBG(120,raw))})
                 .style({'fill': 'rgba(200,200,200,0.5)'});
@@ -831,7 +879,97 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
     }
 
     function drawOverlay(svg, numOfWeeks, day){
+        if(numOfWeeks == undefined){
+            numOfWeeks = 1;
+        }
 
+        var currentWeek = parseInt(svg.attr('id'));
+        var date = [];
+        var mapDay = {0: "Sunday", 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thursday", 5: "Friday", 6: "Saturday"};
+
+        svg.append('g').attr({'class': 'testGraph'+currentWeek});
+        console.log(structured);
+
+        var mapD = {0: "prevsat", 1: "sunday", 2: "monday", 3: "tuesday", 4: "wednesday", 5: "thursday", 6: "friday", 7: "saturday"};
+        var dates = [];
+
+        for(var i=0; i<7; i++){
+            dates.push(eval("structured[currentWeek]."+mapD[i]+".dates[0]"));
+
+        }
+
+        console.log(dates);
+
+        svg.selectAll('text.monthIndicator').data(dates).enter().append('text')
+            .attr({'x': svgPadding*5 + 15, 'y': function(d,i){ return svgHeight*(i+1)-130; }, 'width': svgPadding*2, 'height': svgPadding*2, 'font-size': 12, 'class': 'monthIndicator'})
+            .text(function(d,i){ if(d != undefined){ return moment(d).format('MMM, DD') }else{ return null;}})
+            .attr("text-anchor","end")
+            .style({'fill': '#666', 'stroke-width': 0, 'stroke': '#666'});
+
+        svg.selectAll('text.dayIndicator').data(dates).enter().append('text')
+            .attr({'x': svgPadding*5 + 15, 'y': function(d,i){ return svgHeight*(i+1)-150; }, 'width': svgPadding*2, 'height': svgPadding*2, 'font-size': 12, 'class': 'dayIndicator'})
+            .text(function(d,i){ if(d){ return mapDay[moment(d).day()]; } })
+            .attr("text-anchor","end")
+            .style({'fill': '#666', 'stroke-width': 0, 'stroke': '#666'});
+
+        svg.append('g').attr({'class': 'testGraph'+currentWeek});
+
+        for(var j=0; j<7; j++){
+            var testDrive = eval('structured[currentWeek].'+mapD[j]);
+            var group = svg.select('g.testGraph'+currentWeek).selectAll('g#day'+j).data(testDrive.levels).enter().append('g')
+                .attr({'class': 'elementGroup','id': 'day'+j});
+            //HACK
+            console.log(testDrive.times);
+            console.log(testDrive.dates);
+            group.append('circle')
+                .attr({'r': 2, 'cx': function(d,i){ return scaleWeek(testDrive.times[i], testDrive.dates[0]);}, 'cy': function(d,i){ return scaleBG(testDrive.levels[i], raw)}, 'class': 'path' + ' ' + mapD[j]})
+                .style({'stroke': 'none', 'fill': function(d,i){
+                    if(parseInt(d)<low){
+                        return "rgba(0,0,255,0.5)";
+                    }else if(parseInt(d)>high){
+                        return "rgba(255,0,0,0.5)";
+                    }else{
+                        return "rgba(30,30,30,0.5)";
+                    }
+                }});
+
+            // group.append('text')
+            //         .attr({'x': function(d,idx){ return scaleTime(testDrive.times[idx], testDrive.dates[0])-(svgWidth-10*svgPadding)/24/2 + 6;}, 'y': function(d,idx){ return svgHeight*(j) + scaleBG(testDrive.levels[idx], raw) + 15 }, 'font-size': 9, 'id': function(d,i){ return i;}, 'class': 'BGValue' + ' ' +mapD[j]})
+            //         .text(function(d,i){ return parseInt(d);})
+            //         .style({'fill': '#000000', 'stroke-width': 0, 'stroke': '#000000'});
+
+        }
+
+        $(".slider.normalrange").slider()
+            .on('slideStop', function(e){
+                var lohi = $('.normalController .tooltip-inner').text().replace(/\s/g,'').split(':');
+                low = lohi[0];
+                high = lohi[1];
+
+                svg.selectAll('rect.normalrange').attr({'y': function(d,i){
+                    return scaleBG(high, raw)+i*svgHeight;
+                }, 'height': parseFloat(scaleBG(low, raw) - scaleBG(high,raw))});
+
+                svg.select('g.testGraph'+currentWeek).selectAll('g.elementGroup').selectAll('circle')
+                    .style({'fill': function(d,i){
+                        if(parseInt(d)<low){
+                            return "rgba(0,0,255,0.5)";
+                        }else if(parseInt(d)>high){
+                            return "rgba(255,0,0,0.5)";
+                        }else{
+                            return "rgba(30,30,30,0.5)";
+                        }
+                    }});
+            });
+
+        svg.selectAll('.elementGroup').on('mouseover', function(d,i){ // svg.selectAll('g rect').on('mouseover', function(d,i){
+
+            d3.select(this).select('text').transition().attr({'font-size': 20}); // 'y': parseInt(d3.select(textElement)[0][0].attr('y')) - 20,
+        });
+
+        svg.selectAll('.elementGroup').on('mouseout', function(d,i){
+            d3.select(this).select('text').transition().attr({ 'font-size': 9}); //'y': parseInt(d3.select(textElement)[0][0].attr('y')) + 20,
+        });
     }
 
     $(document).ready(function(){
@@ -893,19 +1031,17 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
             .on('slideStop', function(e){
                 weeksToDisplay = $(this).val();
                 $('svg,hr').remove();
-                for(var i=0; i<weeksToDisplay; i++){
-                    svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i});
-                }
-
-                $('svg').after("<hr>");
 
                 //just one canvas for the overlay plot. otherwise draw according to weeks
                 for(var i=0; i<weeksToDisplay; i++){
+                    svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i});
                     drawCanvas(svgs[i], $(svgs[i]).attr('id'), weeksToDisplay);
                     draw(svgs[i], weeksToDisplay, map[i]);
                     if(mode == 3)
                         break;
                 }
+        
+                $('svg').after("<hr>");
 //                console.log($(this).val());
             });
 
