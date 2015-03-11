@@ -804,7 +804,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
             numOfWeeks = 1;
         }
         // expands the svg height according to the # of weeks to be displayed
-        svg.style({'height': svgHeight*4 + 'px' });
+        // svg.style({'height': svgHeight*4 + 'px' });
 
         //addjust svg height and 
         // svgHeight = svgHeight * 4;
@@ -918,9 +918,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
             var testDrive = eval('structured[currentWeek].'+mapD[j]);
             var group = svg.select('g.testGraph'+currentWeek).selectAll('g#day'+j).data(testDrive.levels).enter().append('g')
                 .attr({'class': 'elementGroup','id': 'day'+j});
-            //HACK
-            console.log(testDrive.times);
-            console.log(testDrive.dates);
+
             group.append('circle')
                 .attr({'r': 2, 'cx': function(d,i){ return scaleWeek(testDrive.times[i], testDrive.dates[0]);}, 'cy': function(d,i){ return scaleBG(testDrive.levels[i], raw)}, 'class': 'path' + ' ' + mapD[j]})
                 .style({'stroke': 'none', 'fill': function(d,i){
@@ -1033,12 +1031,19 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                 $('svg,hr').remove();
 
                 //just one canvas for the overlay plot. otherwise draw according to weeks
-                for(var i=0; i<weeksToDisplay; i++){
-                    svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i});
-                    drawCanvas(svgs[i], $(svgs[i]).attr('id'), weeksToDisplay);
-                    draw(svgs[i], weeksToDisplay, map[i]);
-                    if(mode == 3)
-                        break;
+                if(mode == 3) {
+                    for(var i=0; i<weeksToDisplay; i++){
+                        if(i == 0)
+                            drawCanvas(svgs[i], $(svgs[i]).attr('id'), weeksToDisplay);
+                        draw(svgs[0], weeksToDisplay, map[i]);
+                    }
+                }
+                else {
+                    for(var i=0; i<weeksToDisplay; i++){
+                        if(mode != 3)
+                            drawCanvas(svgs[i], $(svgs[i]).attr('id'), weeksToDisplay);
+                        draw(svgs[i], weeksToDisplay, map[i]);
+                    }
                 }
         
                 $('svg').after("<hr>");
@@ -1166,11 +1171,19 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 //        }
 
         //only one draw for overlay plot
-        for(var i=0; i<weeksToDisplay; i++){
-            drawCanvas(svgs[i], $(svgs[i]).attr('id'), weeksToDisplay);
-            draw(svgs[i], weeksToDisplay, map[i]);
-            if(mode == 3)
-                break;
+        if(mode == 3) {
+            for(var i=0; i<weeksToDisplay; i++){
+                if(i == 0)
+                    drawCanvas(svgs[i], $(svgs[i]).attr('id'), weeksToDisplay);
+                draw(svgs[0], weeksToDisplay, map[i]);
+            }
+        }
+        else {
+            for(var i=0; i<weeksToDisplay; i++){
+                if(mode != 3)
+                    drawCanvas(svgs[i], $(svgs[i]).attr('id'), weeksToDisplay);
+                draw(svgs[i], weeksToDisplay, map[i]);
+            }
         }
 
         console.log(structured);
