@@ -865,6 +865,22 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                 .attr({'x': function(d,i){ return scaleTimeOverlay(d) - 14+'px'; }, 'y': svgHeight - svgPadding + 15 + j*svgHeight, 'font-size': '9px', 'class': 'time'+j});
         }
 
+        //rectangles for mealtimes
+        var offset = scaleWeek("12:00 AM", "2015-03-10") - scaleWeek("12:00 AM", "2015-03-9");
+        for(var j=0; j<7; j++){
+            svg.append('rect')
+                .attr({x: scaleWeek("6:00 AM", "2015-03-8") + (j*offset), y: svgPadding-10, width: scaleWeek("9:00 AM", "2015-03-9") - scaleWeek("6:00 AM", "2015-03-9"), "class": "breakfastBracket", "height": svgHeight - svgPadding - 10})
+                .style({"fill": "#ADD8E6"});
+
+            svg.append('rect')
+                .attr({x: scaleWeek("11:00 AM", "2015-03-8") + (j*offset), y: svgPadding-10, width: scaleWeek("2:00 PM", "2015-03-9") - scaleWeek("11:00 AM", "2015-03-9"), "class": "lunchBracket", "height": svgHeight - svgPadding - 10})
+                .style({"fill": "#ADD8E6"});
+
+            svg.append('rect')
+                .attr({x: scaleWeek("5:00 PM", "2015-03-8") + (j*offset), y: svgPadding-10, width: scaleWeek("8:00 PM", "2015-03-9") - scaleWeek("5:00 PM", "2015-03-9"), "class": "dinnerBracket", "height": svgHeight - svgPadding - 10})
+                .style({"fill": "#ADD8E6"});    
+        }
+
         // draw the normal range
         for(var j=0; j<1; j++){
             svg.append('rect')
@@ -1141,7 +1157,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     if(mode == 3)
                     break;
                 }
-                
+
                 //only one draw for overlay plot
                 if(mode == 3) {
                     overlayRun(draw, drawCanvas, svgs, weeksToDisplay, map);
