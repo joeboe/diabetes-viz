@@ -48,7 +48,24 @@ Type 1 Diabetes Visualization Prototype 1
         </div>
 
     </div>
+
+    <!-- criteria buttons -->
+    <div class="row-fluid">
+        <h5>Check Criteria</h5>
+        <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-primary active">
+                <input type="checkbox" autocomplete="off"> Breakfast
+            </label>
+            <label class="btn btn-primary">
+                <input type="checkbox" autocomplete="off"> Lunch
+            </label>
+            <label class="btn btn-primary">
+                <input type="checkbox" autocomplete="off"> Dinner
+            </label>
+        </div>
+    </div>
     
+
     <div style="padding-top:10px;padding-bottom:10px"><hr></div>
 
     <div class="row-fluid">
@@ -140,7 +157,9 @@ Type 1 Diabetes Visualization Prototype 1
         </div>
     </div>
 </div>
-
+<div>
+    Check Criteria
+</div>
 
 <div class="vizElement"></div>
 @stop
