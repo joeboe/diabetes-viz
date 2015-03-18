@@ -52,19 +52,34 @@ Type 1 Diabetes Visualization Prototype 1
     <!-- criteria buttons -->
     <div class="row-fluid">
         <h5>Check Criteria</h5>
-        <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-primary active">
-                <input type="checkbox" autocomplete="off"> Breakfast
+        <div class="btn-group" data-toggle="button">
+            <label class="btn btn-primary">
+                <input id="breakfastcheck" type="checkbox" autocomplete="off"> Breakfast
             </label>
             <label class="btn btn-primary">
-                <input type="checkbox" autocomplete="off"> Lunch
+                <input id="lunchcheck" type="checkbox" autocomplete="off"> Lunch
             </label>
             <label class="btn btn-primary">
-                <input type="checkbox" autocomplete="off"> Dinner
+                <input id="dinnercheck" type="checkbox" autocomplete="off"> Dinner
+            </label>
+            <label class="btn btn-primary">
+                <input id="bedtimecheck" type="checkbox" autocomplete="off"> Bedtime
+            </label>
+            <label class="btn btn-primary">
+                <input id="lowcheck" type="checkbox" autocomplete="off"> Low
             </label>
         </div>
     </div>
-    
+<!--     <div>
+        <span class="button-checkbox">
+            <button id="breakfastcheck" type="button" class="btn" data-color="primary">Breakfast</button>
+            <input type="checkbox" class="hidden" />
+        </span>
+        <span class="button-checkbox">
+            <button type="button" class="btn" data-color="primary">Checked</button>
+            <input type="checkbox" class="hidden" checked />
+    </span>
+    </div> -->
 
     <div style="padding-top:10px;padding-bottom:10px"><hr></div>
 

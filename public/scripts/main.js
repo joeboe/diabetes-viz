@@ -75,10 +75,17 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
     var svgWidth = 900;
     var svgHeight = 180;
     var svgPadding = 20;
+    var svgGutter = 80;
 
     // thresholds for BG value
     var low = 70;
     var high = 120;
+
+    //colors
+    var normalColor = "rgba(220,252,0,0.5)";
+    var highColor = "rgba(248,0,57,0.5)";
+    var higherColor = "rgba(255,0,0,0.5)";
+    var lowColor = "rgba(8,71,218,0.5)"
 
     // debug
     var mode = getQuerystringNameValue("mode"); // 0 for scatter plot, 1 for heatmap, 2 for shape
@@ -799,11 +806,8 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         if(!numOfWeeks){
             numOfWeeks = 1;
         }
-        // expands the svg height according to the # of weeks to be displayed
-        // svg.style({'height': svgHeight*4 + 'px' });
-
-        //addjust svg height and 
-        // svgHeight = svgHeight * 4;
+        // expands the svg height a little for suggestions text
+        svg.style({'height': svgHeight + svgGutter + 'px' });
 
         //get width of the graph
         var graphWidth = svgPadding*8 - svgWidth - svgPadding; 
@@ -891,7 +895,6 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
     }
 
     function drawOverlay(svg, numOfWeeks, day, weeks, mealNums){
-        alert(day);
         if(numOfWeeks == undefined){
             numOfWeeks = 1;
         }
@@ -965,11 +968,11 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     'week': currentWeek})
                 .style({'stroke': 'none', 'fill': function(d,i){
                     if(parseInt(d)<low){
-                        return "rgba(0,0,255,0.5)";
+                        return lowColor;
                     }else if(parseInt(d)>high){
-                        return "rgba(255,0,0,0.5)";
+                        return highColor;
                     }else{
-                        return "rgba(30,30,30,0.5)";
+                        return normalColor;
                     }
                 }});
 
@@ -1020,75 +1023,172 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
     function overlayRun(draw, drawCanvas, svgs, weeksToDisplay, map) {
         var svg = svgs[0];
         //to keep track of violating values at mealtime
-        var mealValues = {breakfastTotal:0, lunchTotal:0, dinnerTotal:0, breakfastHigh: 0, lunchHigh:0, dinnerHigh:0};
+        var mealValues = {breakfastTotal:0, lunchTotal:0, dinnerTotal:0, breakfastHigh: 0, lunchHigh:0, dinnerHigh:0, lowTotal:0};
         for(var i=0; i<weeksToDisplay; i++){
             if(i == 0)
                 drawCanvas(svgs[i], $(svgs[i]).attr('id'), weeksToDisplay);
             draw(svgs[0], weeksToDisplay, map[i], i, mealValues);
         }
 
-        //highlight points during mealtime taht are too high or too low
         var breakfastHigh = 180;
+
+        //count the high points for criteria
         svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
-                .style({'fill': function(d,i){
-                    if(parseInt(d)>breakfastHigh) {
-                        mealValues.breakfastHigh++;
-                        return "rgba(255,255,0,0.5)";
-                    }
-                    else if(parseInt(d)<low){
-                        return "rgba(0,0,255,0.5)";
-                    }else if(parseInt(d)>high){
-                        return "rgba(255,0,0,0.5)";
-                    }else{
-                        return "rgba(30,30,30,0.5)";
-                    }
+            .attr({'meal': function(d,i){
+                if(parseInt(d)>breakfastHigh) {
+                    mealValues.breakfastHigh++;
+                    return 'breakfast'
                 }
+                else
+                    return 'breakfast'
             }
-        );
+        });
 
         svg.selectAll('g.elementGroup').selectAll("circle[meal='lunch']")
-                .style({'fill': function(d,i){
-                    if(parseInt(d)>breakfastHigh) {
-                        mealValues.lunchHigh++;
-                        return "rgba(255,255,0,0.5)";
-                    }
-                    else if(parseInt(d)<low){
-                        return "rgba(0,0,255,0.5)";
-                    }else if(parseInt(d)>high){
-                        return "rgba(255,0,0,0.5)";
-                    }else{
-                        return "rgba(30,30,30,0.5)";
-                    }
+            .attr({'meal': function(d,i){
+                if(parseInt(d)>breakfastHigh) {
+                    mealValues.lunchHigh++;
+                    return 'lunch'
                 }
+                else
+                    return 'lunch'
             }
-        );
+        });
 
         svg.selectAll('g.elementGroup').selectAll("circle[meal='dinner']")
-                .style({'fill': function(d,i){
-                    if(parseInt(d)>breakfastHigh) {
-                        mealValues.dinnerHigh++;
-                        return "rgba(255,255,0,0.5)";
-                    }
-                    else if(parseInt(d)<low){
-                        return "rgba(0,0,255,0.5)";
-                    }else if(parseInt(d)>high){
-                        return "rgba(255,0,0,0.5)";
-                    }else{
-                        return "rgba(30,30,30,0.5)";
-                    }
+            .attr({'meal': function(d,i){
+                if(parseInt(d)>breakfastHigh) {
+                    mealValues.dinnerHigh++;
+                    return 'dinner'
                 }
+                else
+                    return 'dinner'
             }
-        );
+        });
 
         console.log(mealValues.breakfastHigh);
         console.log(mealValues.breakfastTotal);
-        if(mealValues.breakfastHigh / mealValues.breakfastTotal > 0.5)
-            alert("More than 50% of your breakfast values are over 180");
-        if(mealValues.lunchHigh / mealValues.lunchTotal > 0.5)
-            alert("More than 50% of your lunch values are over 180");
-        if(mealValues.dinnerHigh / mealValues.dinnerHigh > 0.5)
-            alert("More than 50% of your dinner values are over 180");
 
+        //highlight points during mealtime taht are too high or too low
+
+        $('#breakfastcheck').change({svg: svg, breakfastHigh: breakfastHigh},
+            function(){
+                if (this.checked) {
+                    svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
+                        .style({'fill': function(d,i){
+                            if(parseInt(d)>breakfastHigh) {
+                                return "rgba(255,255,0,0.5)";
+                            }
+                            else if(parseInt(d)<low){
+                                return "rgba(0,0,255,0.5)";
+                            }else if(parseInt(d)>high){
+                                return "rgba(255,0,0,0.5)";
+                            }else{
+                                return "rgba(30,30,30,0.5)";
+                            }
+                        }
+                    });
+
+                    svg.append('text')
+                        .attr({'x': svgWidth / 2 + 15, 'y': svgHeight + svgGutter / 2, 'width': svgPadding*2, 'height': svgPadding*2, 'font-size': 12, 'class': 'alertText'})
+                        .text("alert")
+                        .attr("text-anchor","end")
+                        .style({'fill': '#666', 'stroke-width': 0, 'stroke': '#666'});
+
+                    if(mealValues.breakfastHigh / mealValues.breakfastTotal > 0.5) {
+                        alert("More than 50% of your breakfast values are over 180");
+                        
+                    }
+                }
+                else {
+                    svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
+                        .style({'fill': function(d,i){
+                            if(parseInt(d)<low){
+                                return "rgba(0,0,255,0.5)";
+                            }else if(parseInt(d)>high){
+                                return "rgba(255,0,0,0.5)";
+                            }else{
+                                return "rgba(30,30,30,0.5)";
+                            }
+                        }
+                    });
+
+                    //remove alert
+                }
+            }
+        );
+
+        $('#lunchcheck').change({svg: svg},
+            function(){
+                if (this.checked) {
+                    svg.selectAll('g.elementGroup').selectAll("circle[meal='lunch']")
+                        .style({'fill': function(d,i){
+                            if(parseInt(d)>breakfastHigh) {
+                                return "rgba(255,255,0,0.5)";
+                            }
+                            else if(parseInt(d)<low){
+                                return "rgba(0,0,255,0.5)";
+                            }else if(parseInt(d)>high){
+                                return "rgba(255,0,0,0.5)";
+                            }else{
+                                return "rgba(30,30,30,0.5)";
+                            }
+                        }
+                    });
+                    if(mealValues.lunchHigh / mealValues.lunchTotal > 0.5)
+                        alert("More than 50% of your lunch values are over 180");
+                }
+                else {
+                    svg.selectAll('g.elementGroup').selectAll("circle[meal='lunch']")
+                        .style({'fill': function(d,i){
+                            if(parseInt(d)<low){
+                                return "rgba(0,0,255,0.5)";
+                            }else if(parseInt(d)>high){
+                                return "rgba(255,0,0,0.5)";
+                            }else{
+                                return "rgba(30,30,30,0.5)";
+                            }
+                        }
+                    });
+                }
+            }
+        );
+
+        $('#dinnercheck').change({svg: svg},
+            function(){
+                if (this.checked) {
+                    svg.selectAll('g.elementGroup').selectAll("circle[meal='dinner']")
+                        .style({'fill': function(d,i){
+                            if(parseInt(d)>breakfastHigh) {
+                                return "rgba(255,255,0,0.5)";
+                            }
+                            else if(parseInt(d)<low){
+                                return "rgba(0,0,255,0.5)";
+                            }else if(parseInt(d)>high){
+                                return "rgba(255,0,0,0.5)";
+                            }else{
+                                return "rgba(30,30,30,0.5)";
+                            }
+                        }
+                    });
+                    if(mealValues.dinnerHigh / mealValues.dinnerHigh > 0.5)
+                        alert("More than 50% of your dinner values are over 180");
+                }
+                else {
+                    svg.selectAll('g.elementGroup').selectAll("circle[meal='dinner']")
+                        .style({'fill': function(d,i){
+                            if(parseInt(d)<low){
+                                return "rgba(0,0,255,0.5)";
+                            }else if(parseInt(d)>high){
+                                return "rgba(255,0,0,0.5)";
+                            }else{
+                                return "rgba(30,30,30,0.5)";
+                            }
+                        }
+                    });
+                }
+            }
+        );
     }
 
     $(document).ready(function(){
@@ -1124,6 +1224,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 //        $('#datepicker').val('2013-07-01');
 
         loadData(dateSel);
+
+        //criteria
+
     });
 
     function run(){
