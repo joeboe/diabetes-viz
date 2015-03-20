@@ -1077,14 +1077,14 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
                         .style({'fill': function(d,i){
                             if(parseInt(d)>breakfastHigh) {
-                                return "rgba(255,255,0,0.5)";
+                                return higherColor;
                             }
                             else if(parseInt(d)<low){
-                                return "rgba(0,0,255,0.5)";
+                                return lowColor;
                             }else if(parseInt(d)>high){
-                                return "rgba(255,0,0,0.5)";
+                                return highColor;
                             }else{
-                                return "rgba(30,30,30,0.5)";
+                                return normalColor;
                             }
                         }
                     });
@@ -1104,11 +1104,11 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
                         .style({'fill': function(d,i){
                             if(parseInt(d)<low){
-                                return "rgba(0,0,255,0.5)";
+                                return lowColor;
                             }else if(parseInt(d)>high){
-                                return "rgba(255,0,0,0.5)";
+                                return highColor;
                             }else{
-                                return "rgba(30,30,30,0.5)";
+                                return normalColor;
                             }
                         }
                     });
@@ -1124,14 +1124,14 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='lunch']")
                         .style({'fill': function(d,i){
                             if(parseInt(d)>breakfastHigh) {
-                                return "rgba(255,255,0,0.5)";
+                                return higherColor;
                             }
                             else if(parseInt(d)<low){
-                                return "rgba(0,0,255,0.5)";
+                                return lowColor;
                             }else if(parseInt(d)>high){
-                                return "rgba(255,0,0,0.5)";
+                                return highColor;
                             }else{
-                                return "rgba(30,30,30,0.5)";
+                                return normalColor;
                             }
                         }
                     });
@@ -1142,11 +1142,11 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='lunch']")
                         .style({'fill': function(d,i){
                             if(parseInt(d)<low){
-                                return "rgba(0,0,255,0.5)";
+                                return lowColor;
                             }else if(parseInt(d)>high){
-                                return "rgba(255,0,0,0.5)";
+                                return highColor;
                             }else{
-                                return "rgba(30,30,30,0.5)";
+                                return normalColor;
                             }
                         }
                     });
@@ -1160,14 +1160,14 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='dinner']")
                         .style({'fill': function(d,i){
                             if(parseInt(d)>breakfastHigh) {
-                                return "rgba(255,255,0,0.5)";
+                                return higherColor;
                             }
                             else if(parseInt(d)<low){
-                                return "rgba(0,0,255,0.5)";
+                                return lowColor;
                             }else if(parseInt(d)>high){
-                                return "rgba(255,0,0,0.5)";
+                                return highColor;
                             }else{
-                                return "rgba(30,30,30,0.5)";
+                                return normalColor;
                             }
                         }
                     });
@@ -1178,11 +1178,11 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='dinner']")
                         .style({'fill': function(d,i){
                             if(parseInt(d)<low){
-                                return "rgba(0,0,255,0.5)";
+                                return lowColor;
                             }else if(parseInt(d)>high){
-                                return "rgba(255,0,0,0.5)";
+                                return highColor;
                             }else{
-                                return "rgba(30,30,30,0.5)";
+                                return normalColor;
                             }
                         }
                     });
