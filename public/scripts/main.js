@@ -83,7 +83,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
     //colors
     var normalColor = "rgba(220,252,0,0.5)";
-    var highColor = "rgba(248,0,57,0.5)";
+    var highColor = "rgba(247,80,119,0.5)";
     var higherColor = "rgba(255,0,0,0.5)";
     var lowColor = "rgba(8,71,218,0.5)"
 
@@ -1018,7 +1018,34 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         });
     }
 
+    //handles displaying alerts
+    function showAlert(alerts, svg) {
+        var spacing = 15;
+        //iterate through the map and display the corresponding alerts
+        //1
+        var messages= ["Your breakfast values are high.  Try changing your Lantus or Basal insulin dosage.",
+            "Your lunch values are high.  Try changing your breakfast carb ratio.",
+            "Your dinner values are high.  Try changing your lunch carb ratio.",
+            "Your bedtime values are high.  Try changing your dinner carb ratios.",
+            "You have some very low values throughout the week.  Try to think about what kind of activity may be causing low blood sugar."];
 
+        var counter = 1;
+
+        for(var key of alerts.entries()) {
+            //clear messages
+            svg.selectAll(".alertText").remove();
+            //show the messages if needed
+            console.log(key[0]);
+            if(key[1] == true) {
+                svg.append('text')
+                    .attr({'x': svgWidth / 2 + 15, 'y': (svgHeight + svgGutter / 2) + (counter * spacing), 'width': svgPadding*2, 'height': svgPadding*2, 'font-size': 12, 'class': 'alertText'})
+                    .text(messages[key[0]])
+                    .attr("text-anchor","end")
+                    .style({'fill': '#666', 'stroke-width': 0, 'stroke': '#666'});
+                counter++;
+            }
+        }
+    }
     //handle criteria
     function overlayRun(draw, drawCanvas, svgs, weeksToDisplay, map) {
         var svg = svgs[0];
@@ -1029,6 +1056,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                 drawCanvas(svgs[i], $(svgs[i]).attr('id'), weeksToDisplay);
             draw(svgs[0], weeksToDisplay, map[i], i, mealValues);
         }
+
+        //for the suggestions test
+        var alerts = new Map();
 
         var breakfastHigh = 180;
 
@@ -1069,8 +1099,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         console.log(mealValues.breakfastHigh);
         console.log(mealValues.breakfastTotal);
 
-        //highlight points during mealtime taht are too high or too low
-
+        //highlight points during mealtime that are too high or too low
         $('#breakfastcheck').change({svg: svg, breakfastHigh: breakfastHigh},
             function(){
                 if (this.checked) {
@@ -1095,9 +1124,11 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                         .attr("text-anchor","end")
                         .style({'fill': '#666', 'stroke-width': 0, 'stroke': '#666'});
 
+                    //show alert
                     if(mealValues.breakfastHigh / mealValues.breakfastTotal > 0.5) {
                         alert("More than 50% of your breakfast values are over 180");
-                        
+                        alerts.set(0, true);
+                        showAlert(alerts, svg);
                     }
                 }
                 else {
@@ -1114,11 +1145,13 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     });
 
                     //remove alert
+                    alerts.set(0, false);
+                    showAlert(alerts, svg);
                 }
             }
         );
 
-        $('#lunchcheck').change({svg: svg},
+        $('#lunchcheck').change({svg: svg, breakfastHigh: breakfastHigh},
             function(){
                 if (this.checked) {
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='lunch']")
@@ -1135,8 +1168,13 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             }
                         }
                     });
-                    if(mealValues.lunchHigh / mealValues.lunchTotal > 0.5)
+
+                    //show alerts
+                    if(mealValues.lunchHigh / mealValues.lunchTotal > 0.5) {
                         alert("More than 50% of your lunch values are over 180");
+                        alerts.set(1, true);
+                        showAlert(alerts, svg);
+                    }
                 }
                 else {
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='lunch']")
@@ -1150,12 +1188,17 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             }
                         }
                     });
+
+                    //hide alert
+                    alerts.set(1, false);
+                    showAlert(alerts, svg);
                 }
             }
         );
 
-        $('#dinnercheck').change({svg: svg},
+        $('#dinnercheck').change({svg: svg, breakfastHigh: breakfastHigh},
             function(){
+                alert("button change");
                 if (this.checked) {
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='dinner']")
                         .style({'fill': function(d,i){
@@ -1171,8 +1214,11 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             }
                         }
                     });
-                    if(mealValues.dinnerHigh / mealValues.dinnerHigh > 0.5)
+                    if(mealValues.dinnerHigh / mealValues.dinnerHigh > 0.5) {
                         alert("More than 50% of your dinner values are over 180");
+                        alerts.set(2, true);
+                        showAlert(alerts, svg);
+                    }
                 }
                 else {
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='dinner']")
@@ -1186,6 +1232,10 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             }
                         }
                     });
+
+                    //hide alerts
+                    alerts.set(2, false);
+                    showAlert(alerts, svg);
                 }
             }
         );
@@ -1205,6 +1255,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
         $('#datepicker').datepicker().on('changeDate', function(ev){
             dateSel = ev.date.valueOf();
+
+            //reset counter values
+            mealValues = {breakfastTotal:0, lunchTotal:0, dinnerTotal:0, breakfastHigh: 0, lunchHigh:0, dinnerHigh:0, lowTotal:0};
 
 //            queue()
 //                .defer(function(i, callback){
