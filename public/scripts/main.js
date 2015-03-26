@@ -1256,8 +1256,10 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         $('#datepicker').datepicker().on('changeDate', function(ev){
             dateSel = ev.date.valueOf();
 
-            //reset counter values
-            mealValues = {breakfastTotal:0, lunchTotal:0, dinnerTotal:0, breakfastHigh: 0, lunchHigh:0, dinnerHigh:0, lowTotal:0};
+            //unbind listeners
+            $('#breakfastcheck').off('change');
+            $('#lunchcheck').off('change');
+            $('#dinnercheck').off('change');
 
 //            queue()
 //                .defer(function(i, callback){
