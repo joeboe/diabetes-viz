@@ -801,6 +801,25 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
             d3.select(this).select('text').transition().attr({ 'font-size': 9}); //'y': parseInt(d3.select(textElement)[0][0].attr('y')) + 20,
         });
     }
+///////////////
+////OVERLAY////
+///////////////
+
+//helper functions
+    colorMeal = function(d,i){
+
+        // coords[index] = {x: }
+        if(parseInt(d)>breakfastHigh) {
+            return higherColor;
+        }
+        else if(parseInt(d)<low){
+            return lowColor;
+        }else if(parseInt(d)>high){
+            return highColor;
+        }else{
+            return normalColor;
+        }
+    };
 
     function drawOverlayCanvas(svg, id, numOfWeeks){
         if(!numOfWeeks){
@@ -808,9 +827,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         }
         // expands the svg height a little for suggestions text
         svg.style({'height': svgHeight + svgGutter + 'px' });
+        //expand svg width
+        svg.style({'width': svgWidth * 1.5 + 'px'});
 
-        //get width of the graph
-        var graphWidth = svgPadding*8 - svgWidth - svgPadding; 
 
         svg.select(".weekIndicator").remove();
 
@@ -1046,6 +1065,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
             }
         }
     }
+
     //handle criteria
     function overlayRun(draw, drawCanvas, svgs, weeksToDisplay, map) {
         var svg = svgs[0];
@@ -1103,20 +1123,31 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         $('#breakfastcheck').change({svg: svg, breakfastHigh: breakfastHigh},
             function(){
                 if (this.checked) {
+                    var coords = [];
+                    var index = 0;
+
+                    //get x and y coords from circles
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
-                        .style({'fill': function(d,i){
-                            if(parseInt(d)>breakfastHigh) {
-                                return higherColor;
-                            }
-                            else if(parseInt(d)<low){
-                                return lowColor;
-                            }else if(parseInt(d)>high){
-                                return highColor;
-                            }else{
-                                return normalColor;
-                            }
-                        }
-                    });
+                        .each(function(d,i){
+                            var current = d3.select(this);
+                            coords[index] = {x: current.attr("cx"), y: current.attr("cy")};
+                            index++;
+                        })
+
+                    console.log(coords);
+
+                    svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
+                        .data(coords).enter()
+                        .append('path')
+                            .style("stroke", "black")
+                            .style("fill", "white")
+                            .attr("transform", function(d){
+                                return "translate(" + d.x +"," + d.y + ")";
+                            })
+                            .attr("d", d3.svg.symbol()
+                                .size(10)
+                                .type('cross'));
+
 
                     svg.append('text')
                         .attr({'x': svgWidth / 2 + 15, 'y': svgHeight + svgGutter / 2, 'width': svgPadding*2, 'height': svgPadding*2, 'font-size': 12, 'class': 'alertText'})
