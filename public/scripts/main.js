@@ -80,6 +80,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
     // thresholds for BG value
     var low = 70;
     var high = 120;
+    var mealHigh = 180;
 
     //colors
     var normalColor = "rgba(220,252,0,0.5)";
@@ -821,6 +822,18 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         }
     };
 
+    colorNormal = function(d,i){
+        console.log(high);
+        console.log(parseInt(d));
+        if(parseInt(d)<low){
+            return lowColor;
+        }else if(parseInt(d)>high){
+            return highColor;
+        }else{
+            return normalColor;
+        }
+    }
+
     function drawOverlayCanvas(svg, id, numOfWeeks){
         if(!numOfWeeks){
             numOfWeeks = 1;
@@ -1087,6 +1100,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
             .attr({'meal': function(d,i){
                 if(parseInt(d)>breakfastHigh) {
                     mealValues.breakfastHigh++;
+                    console.log(mealValues.breakfastHigh);
                     return 'breakfast'
                 }
                 else
@@ -1130,31 +1144,37 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
                         .each(function(d,i){
                             var current = d3.select(this);
-                            coords[index] = {x: current.attr("cx"), y: current.attr("cy")};
-                            index++;
+                            if(d > 180) {
+                                coords[index] = {x: current.attr("cx"), y: current.attr("cy")};
+                                index++;
+                            }
                         })
-
+                    console.log("index" + index);
                     console.log(coords);
-
-                    svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
+                    //append triangles on high meal values
+                    svg.selectAll('g.mealGroup')
                         .data(coords).enter()
                         .append('path')
                             .style("stroke", "black")
-                            .style("fill", "white")
+                            .style("fill", "red")
                             .attr("transform", function(d){
                                 return "translate(" + d.x +"," + d.y + ")";
                             })
                             .attr("d", d3.svg.symbol()
                                 .size(10)
-                                .type('cross'));
+                                .type('triangle-up'))
+                            .attr("meal", "breakfast")
+                            .attr("status", "high");
 
 
-                    svg.append('text')
-                        .attr({'x': svgWidth / 2 + 15, 'y': svgHeight + svgGutter / 2, 'width': svgPadding*2, 'height': svgPadding*2, 'font-size': 12, 'class': 'alertText'})
-                        .text("alert")
-                        .attr("text-anchor","end")
-                        .style({'fill': '#666', 'stroke-width': 0, 'stroke': '#666'});
+                    // svg.append('text')
+                    //     .attr({'x': svgWidth / 2 + 15, 'y': svgHeight + svgGutter / 2, 'width': svgPadding*2, 'height': svgPadding*2, 'font-size': 12, 'class': 'alertText'})
+                    //     .text("alert")
+                    //     .attr("text-anchor","end")
+                    //     .style({'fill': '#666', 'stroke-width': 0, 'stroke': '#666'});
 
+                    console.log("breakfast high: " + mealValues.breakfastHigh);
+                    console.log("breakfast total:" + mealValues.breakfastTotal);
                     //show alert
                     if(mealValues.breakfastHigh / mealValues.breakfastTotal > 0.5) {
                         alert("More than 50% of your breakfast values are over 180");
@@ -1163,18 +1183,10 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     }
                 }
                 else {
-                    svg.selectAll('g.elementGroup').selectAll("circle[meal='breakfast']")
-                        .style({'fill': function(d,i){
-                            if(parseInt(d)<low){
-                                return lowColor;
-                            }else if(parseInt(d)>high){
-                                return highColor;
-                            }else{
-                                return normalColor;
-                            }
-                        }
-                    });
-
+                    
+                    //remove triangles
+                    svg.selectAll("path[meal='breakfast']")
+                        .remove();
                     //remove alert
                     alerts.set(0, false);
                     showAlert(alerts, svg);
@@ -1210,6 +1222,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                 else {
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='lunch']")
                         .style({'fill': function(d,i){
+                            console.log(d);
                             if(parseInt(d)<low){
                                 return lowColor;
                             }else if(parseInt(d)>high){
@@ -1229,7 +1242,6 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
         $('#dinnercheck').change({svg: svg, breakfastHigh: breakfastHigh},
             function(){
-                alert("button change");
                 if (this.checked) {
                     svg.selectAll('g.elementGroup').selectAll("circle[meal='dinner']")
                         .style({'fill': function(d,i){
@@ -1245,7 +1257,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             }
                         }
                     });
-                    if(mealValues.dinnerHigh / mealValues.dinnerHigh > 0.5) {
+                        console.log("dinner high: " + mealValues.dinnerHigh);
+                        console.log("dinner total:" + mealValues.dinnerTotal);
+                    if(mealValues.dinnerHigh / mealValues.dinnerTotal > 0.5) {
                         alert("More than 50% of your dinner values are over 180");
                         alerts.set(2, true);
                         showAlert(alerts, svg);
@@ -1270,6 +1284,10 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                 }
             }
         );
+
+        //check the checkboxes to begin
+        $("#breakfastcheck").prop("checked", true).trigger("change");
+        $("#breakfastcheck").prop("checked", true).trigger("change");
     }
 
     $(document).ready(function(){
