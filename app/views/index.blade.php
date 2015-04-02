@@ -70,6 +70,11 @@ Type 1 Diabetes Visualization Prototype 1
             </label>
         </div>
     </div>
+
+    <!--aage-->
+    <div class="checkbox">
+        <label><input id="agecheck" type="checkbox" value"">Child Under 12</label>
+    </div>
 <!--     <div>
         <span class="button-checkbox">
             <button id="breakfastcheck" type="button" class="btn" data-color="primary">Breakfast</button>
@@ -177,4 +182,5 @@ Type 1 Diabetes Visualization Prototype 1
 </div>
 
 <div class="vizElement"></div>
+<div class="graph"></div>
 @stop
