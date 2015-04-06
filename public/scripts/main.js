@@ -89,6 +89,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
     var higherColor = "rgba(255,0,0,0.5)";
     var lowColor = "rgba(8,71,218,0.5)"
 
+    //resize
+    var scale =1.5;
+
     // debug
     var mode = getQuerystringNameValue("mode"); // 0 for scatter plot, 1 for heatmap, 2 for shape
     if (mode == null) mode = 0;
@@ -1442,6 +1445,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
         //load a summary graph
         drawGraph(mealValues, svgGraph);
+
+        svg.attr("transform", "scale(" + $(".vizElement").width()/900 + ")");
+           $("svg").height($(".vizElement").width()*0.618);
     }
 
     $(document).ready(function(){
@@ -1641,9 +1647,14 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 //        }
 
         for(var i=0; i<weeksToDisplay; i++){
-            svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i});
-            if(mode == 3)
+            if(mode == 3) {
+                svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i});
+                    // .attr("viewBox", "0 0 " + svgWidth + " " + svgHeight)
+                    // .attr("preserveAscpectRatio", "xMidYMid");
                 break;
+            }
+
+            svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i});
         }
 
         $('svg').after("<hr>");
