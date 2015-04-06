@@ -886,7 +886,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         // expands the svg height a little for suggestions text
         svg.style({'height': svgHeight + svgGutter + 'px' });
         //expand svg width
-        svg.style({'width': svgWidth * 1.5 + 'px'});
+        svg.style({'width': svgWidth + 'px'});
 
 
         svg.select(".weekIndicator").remove();
@@ -1446,8 +1446,23 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         //load a summary graph
         drawGraph(mealValues, svgGraph);
 
-        svg.attr("transform", "scale(" + $(".vizElement").width()/900 + ")");
-           $("svg").height($(".vizElement").width()*0.618);
+        //get windows size
+        var w = window,
+        d = document,
+        e = d.documentElement,
+        g = d.getElementsByTagName('body')[0],
+        x = w.innerWidth || e.clientWidth || g.clientWidth,
+        y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+        $(window).on("resize", function() {
+            alert("resize");
+   
+            //change size based on window size
+            var width = (w.innerWidth || e.clientWidth || g.clientWidth)
+            var targetWidth = width - 400;
+            alert(width);
+            svg.attr("width", targetWidth);
+        });
     }
 
     $(document).ready(function(){
@@ -1648,9 +1663,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
         for(var i=0; i<weeksToDisplay; i++){
             if(mode == 3) {
-                svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i});
-                    // .attr("viewBox", "0 0 " + svgWidth + " " + svgHeight)
-                    // .attr("preserveAscpectRatio", "xMidYMid");
+                svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i})
+                    .attr("viewBox", "0 0 " + svgWidth + " " + svgHeight)
+                    .attr("preserveAscpectRatio", "xMidYMid");
                 break;
             }
 
