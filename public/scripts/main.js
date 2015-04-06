@@ -1455,13 +1455,13 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         y = w.innerHeight|| e.clientHeight|| g.clientHeight;
 
         $(window).on("resize", function() {
-            alert("resize");
+            // alert("resize");
    
             //change size based on window size
             var width = (w.innerWidth || e.clientWidth || g.clientWidth)
             var targetWidth = width - 400;
-            alert(width);
-            svg.attr("width", targetWidth);
+            // alert(width);
+            svg.style("width", targetWidth);
         });
     }
 
