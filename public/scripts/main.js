@@ -1873,4 +1873,21 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
             location.href='deleteAll';
         }
     });
+
+    //button to expand and hide the menu
+    $('.menuButton').click(function(){
+    if ( this.value === 'collapse' ) {
+        // if it's open close it
+        open = false;
+        this.value = 'expand';
+        $('.menu').hide("slow");
+    }
+    else {
+        // if it's close open it
+        open = true;
+        this.value = 'collapse';
+        $('.menu').click();
+        $('.menu').show("slow");
+    }
+});
 });

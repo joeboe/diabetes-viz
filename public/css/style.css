@@ -25,6 +25,12 @@ hr {
     margin: 0;
 }
 
+.menuButton {
+    position: fixed;
+    top: 1em;
+    right: 1em;
+}
+
 /* switch effect */
 .field { float: left;}
 
