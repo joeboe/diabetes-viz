@@ -839,18 +839,25 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         }
     }
 
-    function drawGraph(mealValues, svgGraph) {
+    function drawGraph(mealValues, alerts, svgGraph) {
         //delete previous graph
         d3.select(".graph").selectAll("table").remove();
 
         //prepare data
         var columns = ["Criteria", "High", "Total", "Action"];
-        var data = [{Criteria: "Half Breakfast BS > 180", High: mealValues.breakfastHigh , Total: mealValues.breakfastTotal, Action: "Change basal insulin dose" },
-                    {Criteria: "Half Lunch BS > 180", High: mealValues.lunchHigh , Total: mealValues.lunchTotal, Action: "Change breakfast carb ratio" },
-                    {Criteria: "Half Dinner BS > 180", High: mealValues.dinnerHigh , Total: mealValues.dinnerTotal, Action: "Change lunch carb ratio" },
-                    {Criteria: "Half Bedtime BS > 180", High: mealValues.bedtimeHigh , Total: mealValues.bedtimeTotal, Action: "Change dinner carb ratio" },
-                    {Criteria: "2 or More Low BS Values", High: "N/A", Total: mealValues.lowTotal, Action: "Think about previous activity" }];
+        var data = [{Meal: "Breakfast", Criteria: "Half Breakfast BS > 180", High: mealValues.breakfastHigh , Total: mealValues.breakfastTotal, Action: "No further action needed"},
+                    {Meal: "Lunch", Criteria: "Half Lunch BS > 180", High: mealValues.lunchHigh , Total: mealValues.lunchTotal, Action: "No further action needed" },
+                    {Meal: "Dinner", Criteria: "Half Dinner BS > 180", High: mealValues.dinnerHigh , Total: mealValues.dinnerTotal, Action: "No further action needed" },
+                    {Meal: "Bedtime", Criteria: "Half Bedtime BS > 180", High: mealValues.bedtimeHigh , Total: mealValues.bedtimeTotal, Action: "No further action needed" },
+                    {Meal: "Low", Criteria: "2 or More Low BS Values", High: "N/A", Total: mealValues.lowTotal, Action: "No further action needed" }];
+        var actions = ["Change basal insulin dose", "Chagne breakfast carb ratio", "Change lunch carb ratio", "change dinner carb ratio", "think about previous activity"];
 
+        //edit data to show
+        for(var key of alerts.entries()) {
+            if(key[1] == true) {
+                data[key[0]].Action = actions[key[0]];
+            }
+        }
 
         var table = d3.select(".graph").append("table")
             .attr("style", "margin-left: 250px"),
@@ -865,7 +872,10 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
         var rows = tbody.selectAll("tr")
             .data(data).enter()
-            .append("tr");
+            .append("tr")
+                .attr({'id': function(d,i){
+                    return d.Meal;
+                }});
 
         var cells = rows.selectAll("td")
             .data(function(row) {
@@ -891,10 +901,14 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
         svg.select(".weekIndicator").remove();
 
-        //indicates the week on the right hand side
-        svg.append('text')
+        // indicates the date and number of weeks under graph
+        //TODO
+        d3.select(".week")
+            .style({'height': 30 + 'px', 'width': svgWidth + 'px'});
+
+        d3.select(".week").append('text')
             .text(function(){ return "Week " + parseInt(parseInt(svg.attr('id'))+1); })
-            .attr({x: svgPadding*1-10+20, y: svgPadding-35, 'transform': 'rotate(90)', 'font-size': 25, "class": "weekIndicator"})
+            .attr({x: svgPadding*1-10+20, y: svgPadding-35, 'font-size': 25, "class": "weekIndicator"})
             .style({'fill':'#666666', 'stroke-width':0});
 
         //draw the axises
@@ -925,6 +939,10 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                 .attr({x: scaleWeek("12:00 AM", "2015-03-13"), y: svgPadding-10+j*svgHeight, width: scaleWeek("12:00 AM", "2015-03-14") - scaleWeek("12:00 AM", "2015-03-13"), "class": "fridayBracket", "height": svgHeight - svgPadding - 10})
                 .style({"fill": "#eeeeee"});
 
+            svg.append('rect')
+                .attr({x: svgPadding*8, y: scaleBG(70, raw) , width: svgWidth - svgPadding*9, "class": "lowBracket", "height": parseFloat(scaleBG(0, raw) - scaleBG(70,raw))})
+                .style({"fill": "#d6d6d6", "opacity": "0.0"});    
+
             svg.selectAll('text.BG'+j).data(ticksBG).enter().append('text')
                 .text(function(d){ return d; })
                 .attr({'x': svgPadding*7, 'y': function(d,i){ return svgHeight*j + scaleBG(d, raw) + 3;}, 'font-size': '9px', 'class': 'BG'+j})
@@ -951,15 +969,20 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         for(var j=0; j<7; j++){
             svg.append('rect')
                 .attr({x: scaleWeek("6:00 AM", "2015-03-8") + (j*offset), y: svgPadding-10, width: scaleWeek("9:00 AM", "2015-03-9") - scaleWeek("6:00 AM", "2015-03-9"), "class": "breakfastBracket", "height": svgHeight - svgPadding - 10})
-                .style({"fill": "#ADD8E6"});
+                .style({"fill": "#d6d6d6"});
 
             svg.append('rect')
                 .attr({x: scaleWeek("11:00 AM", "2015-03-8") + (j*offset), y: svgPadding-10, width: scaleWeek("2:00 PM", "2015-03-9") - scaleWeek("11:00 AM", "2015-03-9"), "class": "lunchBracket", "height": svgHeight - svgPadding - 10})
-                .style({"fill": "#ADD8E6"});
+                .style({"fill": "#d6d6d6"});
 
             svg.append('rect')
                 .attr({x: scaleWeek("5:00 PM", "2015-03-8") + (j*offset), y: svgPadding-10, width: scaleWeek("8:00 PM", "2015-03-9") - scaleWeek("5:00 PM", "2015-03-9"), "class": "dinnerBracket", "height": svgHeight - svgPadding - 10})
-                .style({"fill": "#ADD8E6"});    
+                .style({"fill": "#d6d6d6"});    
+
+            svg.append('rect')
+                .attr({x: scaleWeek("8:00 PM", "2015-03-8") + (j*offset), y: svgPadding-10, width: scaleWeek("11:59 PM", "2015-03-9") - scaleWeek("8:00 PM", "2015-03-9"), "class": "bedtimeBracket", "height": svgHeight - svgPadding - 10})
+                .style({"fill": "#d6d6d6", "opacity": "0.0"});    
+
         }
 
         // draw the normal range
@@ -1092,6 +1115,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         svg.selectAll('.elementGroup').on('mouseout', function(d,i){
             d3.select(this).select('text').transition().attr({ 'font-size': 9}); //'y': parseInt(d3.select(textElement)[0][0].attr('y')) + 20,
         });
+
     }
 
     //handles displaying alerts
@@ -1172,8 +1196,14 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                 if(parseInt(d)>breakfastHigh) mealValues.bedtimeHigh++;
             });
 
-        console.log(mealValues.breakfastHigh);
-        console.log(mealValues.breakfastTotal);
+        //check criterias for graph
+        if(mealValues.breakfastHigh / mealValues.breakfastTotal > 0.5) alerts.set(0, true);
+        if(mealValues.lunchHigh / mealValues.lunchTotal > 0.5) alerts.set(1, true);
+        if(mealValues.dinnerHigh / mealValues.dinnerTotal > 0.5) alerts.set(2, true);
+        if(mealValues.bedtimeHigh / mealValues.bedtimeTotal > 0.5) alerts.set(3, true);
+        if(mealValues.lowTotal > 2) alerts.set(4, true);
+        //load a summary graph
+        drawGraph(mealValues, alerts, svgGraph);
 
         //highlight points during mealtime that are too high or too low
         $('#breakfastcheck').change({svg: svg, breakfastHigh: breakfastHigh},
@@ -1207,19 +1237,29 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             .attr("status", "high");
 
 
-                    // svg.append('text')
-                    //     .attr({'x': svgWidth / 2 + 15, 'y': svgHeight + svgGutter / 2, 'width': svgPadding*2, 'height': svgPadding*2, 'font-size': 12, 'class': 'alertText'})
-                    //     .text("alert")
-                    //     .attr("text-anchor","end")
-                    //     .style({'fill': '#666', 'stroke-width': 0, 'stroke': '#666'});
+                    //highlight meal time
+                    svg.selectAll('.breakfastBracket')
+                        .attr()
+                        .style({"fill": "#ADD8E6", 'stroke-width': 1, 'stroke': '#666'});
 
-                    console.log("breakfast high: " + mealValues.breakfastHigh);
-                    console.log("breakfast total:" + mealValues.breakfastTotal);
-                    //show alert
+                    //highlight graph
+                    d3.select("#Breakfast")
+                        .style({"background-color": "#ADD8E6"}); 
+
                     if(mealValues.breakfastHigh / mealValues.breakfastTotal > 0.5) {
-                        alert("More than 50% of your breakfast values are over 180");
                         alerts.set(0, true);
                         showAlert(alerts, svg);
+                        // drawGraph(mealValues, alerts, svgGraph);
+
+                        //highlight meal time
+                        svg.selectAll('.breakfastBracket')
+                            .attr()
+                            .style({"fill": "#ffb4d9", 'stroke-width': 1, 'stroke': '#666'});
+
+                        //highlight graph
+                        d3.select("#Breakfast")
+                            .style({"background-color": "#ffb4d9"});
+
                     }
                 }
                 else {
@@ -1227,9 +1267,20 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     //remove triangles
                     svg.selectAll("path[meal='breakfast']")
                         .remove();
+
+                    //remove meal times
+                    svg.selectAll('.breakfastBracket')
+                        .attr()
+                        .style({"fill": "#d6d6d6", 'stroke-width': 0, 'stroke': '#666'});
+
                     //remove alert
                     alerts.set(0, false);
                     showAlert(alerts, svg);
+                    // drawGraph(mealValues, alerts, svgGraph);
+
+
+                    d3.select("#Breakfast")
+                        .style({"background-color": "#FFFFFF"});
                 }
             }
         );
@@ -1264,14 +1315,30 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             .attr("meal", "lunch")
                             .attr("status", "high");
 
-                    console.log("lunch high: " + mealValues.lunchHigh);
-                    console.log("lunch total:" + mealValues.lunchTotal);
+                    //highlight meal time
+                    svg.selectAll('.lunchBracket')
+                        .attr()
+                        .style({"fill": "#ADD8E6", 'stroke-width': 1, 'stroke': '#666'});
+
+                    //highlight graph
+                    d3.select("#Lunch")
+                        .style({"background-color": "#ADD8E6"}); 
 
                     //show alert
                     if(mealValues.lunchHigh / mealValues.lunchTotal > 0.5) {
                         alert("More than 50% of your lunch values are over 180");
                         alerts.set(1, true);
                         showAlert(alerts, svg);
+                        // drawGraph(mealValues, alerts, svgGraph);
+
+                            //highlight meal time
+                        svg.selectAll('.lunchBracket')
+                            .attr()
+                            .style({"fill": "#ffb4d9", 'stroke-width': 1, 'stroke': '#666'});
+
+                        //highlight graph
+                        d3.select("#Lunch")
+                            .style({"background-color": "#ffb4d9"});
                     }
                 }
                 else {
@@ -1279,9 +1346,19 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     //remove triangles
                     svg.selectAll("path[meal='lunch']")
                         .remove();
+
+                    //remove meal times
+                    svg.selectAll('.lunchBracket')
+                        .attr()
+                        .style({"fill": "#d6d6d6", 'stroke-width': 0, 'stroke': '#666'});
+
                     //remove alert
                     alerts.set(1, false);
                     showAlert(alerts, svg);
+                    // drawGraph(mealValues, alerts, svgGraph);
+
+                    d3.select("#Lunch")
+                        .style({"background-color": "#FFFFFF"});
                 }
             }
         );
@@ -1316,23 +1393,48 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             .attr("meal", "dinner")
                             .attr("status", "high");
 
-                    console.log("dinner high: " + mealValues.dinnerHigh);
-                    console.log("dinner total:" + mealValues.dinnerTotal);
+                    //highlight meal time
+                    svg.selectAll('.dinnerBracket')
+                        .attr()
+                        .style({"fill": "#ADD8E6", 'stroke-width': 1, 'stroke': '#666'});
+
+                    //highlight graph
+                    d3.select("#Dinner")
+                        .style({"background-color": "#ADD8E6"}); 
 
                     //show alert
                     if(mealValues.dinnerHigh / mealValues.dinnerTotal > 0.5) {
-                        alert("More than 50% of your dinner values are over 180");
                         alerts.set(2, true);
                         showAlert(alerts, svg);
+                        // drawGraph(mealValues, alerts, svgGraph);
+
+                        //highlight meal time
+                        svg.selectAll('.dinnerBracket')
+                            .attr()
+                            .style({"fill": "#ffb4d9", 'stroke-width': 1, 'stroke': '#666'});
+
+                        //highlight graph
+                        d3.select("#dinner")
+                            .style({"background-color": "#ffb4d9"});
                     }
                 }
                 else {
                     //remove triangles
                     svg.selectAll("path[meal='dinner']")
                         .remove();
+
+                    //remove meal times
+                    svg.selectAll('.dinnerBracket')
+                        .attr()
+                        .style({"fill": "#d6d6d6", 'stroke-width': 0, 'stroke': '#666'});
+
                     //remove alert
                     alerts.set(2, false);
                     showAlert(alerts, svg);
+                    // drawGraph(mealValues, alerts, svgGraph);
+
+                    d3.select("#Dinner")
+                        .style({"background-color": "#FFFFFF"});
                 }
             }
         );
@@ -1367,14 +1469,29 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             .attr("meal", "bedtime")
                             .attr("status", "high");
 
-                    console.log("bedtime high: " + mealValues.bedtimeHigh);
-                    console.log("bedtime total:" + mealValues.bedtimeTotal);
+                    //highlight meal time
+                    svg.selectAll('.bedtimeBracket')
+                        .attr()
+                        .style({"fill": "#ADD8E6", 'stroke-width': 1, 'stroke': '#666', "opacity": "1.0"});
+
+                    //highlight graph
+                    d3.select("#Bedtime")
+                        .style({"background-color": "#ADD8E6"}); 
 
                     //show alert
                     if(mealValues.bedtimeHigh / mealValues.bedtimeTotal > 0.5) {
-                        alert("More than 50% of your bedtime values are over 180");
                         alerts.set(3, true);
                         showAlert(alerts, svg);
+                        drawGraph(mealValues, alerts, svgGraph);
+
+                        //highlight meal time
+                        svg.selectAll('.bedtimeBracket')
+                            .attr()
+                            .style({"fill": "#ffb4d9", 'stroke-width': 0, 'stroke': '#666', "opacity": "1.0"});
+
+                        //highlight graph
+                        d3.select("#Bedtime")
+                            .style({"background-color": "#ffb4d9"});
                     }
                 }
                 else {
@@ -1384,6 +1501,15 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     //remove alert
                     alerts.set(3, false);
                     showAlert(alerts, svg);
+                    // drawGraph(mealValues, alerts, svgGraph);
+
+                    //hide bracket
+                    svg.selectAll('.bedtimeBracket')
+                        .attr()
+                        .style({"opacity": "0.0"});
+
+                    d3.select("#Bedtime")
+                        .style({"background-color": "#FFFFFF"});
                 }
             }
         );
@@ -1419,10 +1545,29 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                                 .type('triangle-down'))
                             .attr("status", "low");
 
+                    //highlight meal time
+                    svg.selectAll('.lowBracket')
+                        .attr()
+                        .style({"fill": "#ADD8E6", 'stroke-width': 0, 'stroke': '#666', "opacity": "1.0"});
+
+                    //highlight graph
+                    d3.select("#Low")
+                        .style({"background-color": "#ADD8E6"}); 
+
                     //show alert
                     if(mealValues.lowTotal > 2) {
                         alerts.set(4, true);
                         showAlert(alerts, svg);
+                        // drawGraph(mealValues, alerts, svgGraph);
+
+                        //highlight meal time
+                        svg.selectAll('.lowBracket')
+                            .attr()
+                            .style({"fill": "#ffb4d9", 'stroke-width': 0, 'stroke': '#666', "opacity": "1.0"});   
+                        
+                        //highlight graph
+                        d3.select("#Low")
+                            .style({"background-color": "#ffb4d9"});                 
                     }
                 }
                 else {
@@ -1432,6 +1577,15 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     //remove alert
                     alerts.set(4, false);
                     showAlert(alerts, svg);
+                    // drawGraph(mealValues, alerts, svgGraph);
+
+                    //hide bracket
+                    svg.selectAll('.lowBracket')
+                        .attr()
+                        .style({"opacity": "0.0"}); 
+
+                    d3.select("#Low")
+                        .style({"background-color": "#FFFFFF"});  
                 }
             }
         );
@@ -1443,17 +1597,18 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         $("#bedtimecheck").prop("checked", true).trigger("change");
         $("#lowcheck").prop("checked", true).trigger("change");
 
-        //load a summary graph
-        drawGraph(mealValues, svgGraph);
 
-        //get windows size
+        //resize svg 
         var w = window,
         d = document,
         e = d.documentElement,
         g = d.getElementsByTagName('body')[0],
         x = w.innerWidth || e.clientWidth || g.clientWidth,
         y = w.innerHeight|| e.clientHeight|| g.clientHeight;
-
+          
+        var targetWidth = x - 400;
+        svg.style("width", targetWidth);
+        //listener to resize when windows resizes
         $(window).on("resize", function() {
             // alert("resize");
    
@@ -1463,6 +1618,7 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
             // alert(width);
             svg.style("width", targetWidth);
         });
+
     }
 
     $(document).ready(function(){
@@ -1537,9 +1693,16 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
 
                 for(var i=0; i<weeksToDisplay; i++){
+                    //if overlay
+                    if(mode == 3) {
+
+                        svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth +'px', 'height': svgHeight+'px' }).attr({'id': i})
+                            .attr("viewBox", "0 0 " + svgWidth + " " + svgHeight)
+                            .attr("preserveAscpectRatio", "xMidYMid");
+                        break;
+                    }
+
                     svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i});
-                    if(mode == 3)
-                    break;
                 }
 
                 //only one draw for overlay plot
@@ -1662,8 +1825,10 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 //        }
 
         for(var i=0; i<weeksToDisplay; i++){
+            //if overlay
             if(mode == 3) {
-                svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth+'px', 'height': svgHeight+'px' }).attr({'id': i})
+
+                svgs[i] = d3.select('.vizElement').append('svg').style({'width': svgWidth +'px', 'height': svgHeight+'px' }).attr({'id': i})
                     .attr("viewBox", "0 0 " + svgWidth + " " + svgHeight)
                     .attr("preserveAscpectRatio", "xMidYMid");
                 break;

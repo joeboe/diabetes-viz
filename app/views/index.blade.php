@@ -182,5 +182,6 @@ Type 1 Diabetes Visualization Prototype 1
 </div>
 
 <div class="vizElement"></div>
+<div class="week"></div>
 <div class="graph"></div>
 @stop
