@@ -77,6 +77,8 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
     var svgPadding = 20;
     var svgGutter = 80; //gutter for the suggestions text
     var svgGraph = 200; //extra heigh for summary graph
+    var menuWidth = 400; //width of side menu
+    var svgMargin = 150; //size of side margins for the graph;
 
     // thresholds for BG value
     var low = 70;
@@ -91,6 +93,14 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
     //resize
     var scale =1.5;
+        
+    //for the suggestions test
+    var criteriaChecked = new Map();
+    criteriaChecked.set("breakfast", true);
+    criteriaChecked.set("lunch", true);
+    criteriaChecked.set("dinner", true);
+    criteriaChecked.set("bedtime", true);
+    criteriaChecked.set("low", true);
 
     // debug
     var mode = getQuerystringNameValue("mode"); // 0 for scatter plot, 1 for heatmap, 2 for shape
@@ -895,21 +905,24 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         }
         // expands the svg height a little for suggestions text
         svg.style({'height': svgHeight + svgGutter + 'px' });
-        //expand svg width
-        svg.style({'width': svgWidth + 'px'});
+        
+        //expand svg width to be entire width
+        svg.style({'width': window.innerWidth + 'px'});
 
 
         svg.select(".weekIndicator").remove();
 
-        // indicates the date and number of weeks under graph
-        //TODO
+        // indicates the date and number of weeks under graph   
         d3.select(".week")
             .style({'height': 30 + 'px', 'width': svgWidth + 'px'});
 
+        //revmoe previous week
+        d3.select(".weekIndicator").remove();
+
+        //TODO: fix resetting
         d3.select(".week").append('text')
-            .text(function(){ return "Week " + parseInt(parseInt(svg.attr('id'))+1); })
-            .attr({x: svgPadding*1-10+20, y: svgPadding-35, 'font-size': 25, "class": "weekIndicator"})
-            .style({'fill':'#666666', 'stroke-width':0});
+            .text(function(){ return "Start Date: " + dateSel + ", " + numOfWeeks + " weeks"; })
+            .attr({'x': svgPadding*100, 'y': 0, 'font-size': "60px" , "class": "weekIndicator"});
 
         //draw the axises
         var i = 0;
@@ -1148,6 +1161,15 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         }
     }
 
+    //handles remembering which criteria have been checked
+    function resetCriteria(criteriaChecked) {
+        for(var key of criteriaChecked.entries()) {
+            if(key[1] == true) {
+                $("#" + key[0] + "check").prop("checked", true).trigger("change");
+            }
+        }
+    }
+
     //handle criteria
     function overlayRun(draw, drawCanvas, svgs, weeksToDisplay, map) {
                 //unbind listeners
@@ -1261,6 +1283,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                             .style({"background-color": "#ffb4d9"});
 
                     }
+
+                    //remember this should be checked
+                    criteriaChecked.set("breakfast", true);
                 }
                 else {
                     
@@ -1281,6 +1306,8 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
                     d3.select("#Breakfast")
                         .style({"background-color": "#FFFFFF"});
+
+                    criteriaChecked.set("breakfast", false);
                 }
             }
         );
@@ -1326,7 +1353,6 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
                     //show alert
                     if(mealValues.lunchHigh / mealValues.lunchTotal > 0.5) {
-                        alert("More than 50% of your lunch values are over 180");
                         alerts.set(1, true);
                         showAlert(alerts, svg);
                         // drawGraph(mealValues, alerts, svgGraph);
@@ -1340,6 +1366,8 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                         d3.select("#Lunch")
                             .style({"background-color": "#ffb4d9"});
                     }
+
+                    criteriaChecked.set("lunch", true);
                 }
                 else {
                     
@@ -1359,6 +1387,8 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
                     d3.select("#Lunch")
                         .style({"background-color": "#FFFFFF"});
+
+                    criteriaChecked.set("lunch", false);
                 }
             }
         );
@@ -1402,6 +1432,8 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     d3.select("#Dinner")
                         .style({"background-color": "#ADD8E6"}); 
 
+                    criteriaChecked.set("dinner", true);
+
                     //show alert
                     if(mealValues.dinnerHigh / mealValues.dinnerTotal > 0.5) {
                         alerts.set(2, true);
@@ -1435,6 +1467,8 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
                     d3.select("#Dinner")
                         .style({"background-color": "#FFFFFF"});
+
+                    criteriaChecked.set("dinner", false);
                 }
             }
         );
@@ -1478,6 +1512,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     d3.select("#Bedtime")
                         .style({"background-color": "#ADD8E6"}); 
 
+
+                    criteriaChecked.set("bedtime", true);
+
                     //show alert
                     if(mealValues.bedtimeHigh / mealValues.bedtimeTotal > 0.5) {
                         alerts.set(3, true);
@@ -1510,6 +1547,8 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
                     d3.select("#Bedtime")
                         .style({"background-color": "#FFFFFF"});
+
+                    criteriaChecked.set("bedtime", false);
                 }
             }
         );
@@ -1554,6 +1593,8 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                     d3.select("#Low")
                         .style({"background-color": "#ADD8E6"}); 
 
+                    criteriaChecked.set("low", true);
+
                     //show alert
                     if(mealValues.lowTotal > 2) {
                         alerts.set(4, true);
@@ -1585,18 +1626,20 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
                         .style({"opacity": "0.0"}); 
 
                     d3.select("#Low")
-                        .style({"background-color": "#FFFFFF"});  
+                        .style({"background-color": "#FFFFFF"});
+
+                    criteriaChecked.set("low", false);  
                 }
             }
         );
 
         //check the checkboxes to begin
-        $("#breakfastcheck").prop("checked", true).trigger("change");
-        $("#lunchcheck").prop("checked", true).trigger("change");
-        $("#dinnercheck").prop("checked", true).trigger("change");
-        $("#bedtimecheck").prop("checked", true).trigger("change");
-        $("#lowcheck").prop("checked", true).trigger("change");
-
+        resetCriteria(criteriaChecked);
+        // $("#breakfastcheck").prop("checked", true).trigger("change");
+        // $("#lunchcheck").prop("checked", true).trigger("change");
+        // $("#dinnercheck").prop("checked", true).trigger("change");
+        // $("#bedtimecheck").prop("checked", true).trigger("change");
+        // $("#lowcheck").prop("checked", true).trigger("change");
 
         //resize svg 
         var w = window,
@@ -1614,10 +1657,12 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
    
             //change size based on window size
             var width = (w.innerWidth || e.clientWidth || g.clientWidth)
-            var targetWidth = width - 400;
-            // alert(width);
+            var targetWidth = width - menuWidth;
             svg.style("width", targetWidth);
+            svg.style("height", targetWidth / 5);
         });
+
+
 
     }
 
@@ -1634,7 +1679,9 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
 
 
         $('#datepicker').datepicker().on('changeDate', function(ev){
-            dateSel = ev.date.valueOf();
+            dateSel = ev.date.toLocaleDateString();
+
+            // alert(ev.date);
 
             //unbind listeners
             $('#breakfastcheck').off('change');
@@ -1881,6 +1928,11 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         open = false;
         this.value = 'expand';
         $('.menu').hide("slow");
+        $('.menuButton').text("+");
+        $('.menuButton').css('width', 30);
+
+        menuWidth = 100;
+        $(window).trigger('resize');
     }
     else {
         // if it's close open it
@@ -1888,6 +1940,11 @@ define(['jquery','D3','queue','moment','slider','datepicker'], function($, d3, q
         this.value = 'collapse';
         $('.menu').click();
         $('.menu').show("slow");
+        $('.menuButton').text("-");
+        $('.menuButton').css('width', 350);
+
+        menuWidth = 400;
+        $(window).trigger('resize');
     }
 });
 });

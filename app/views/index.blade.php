@@ -4,7 +4,7 @@ Type 1 Diabetes Visualization Prototype 1
 @stop
 @section('body')
 <div class="spinner" style="position:fixed; left: 35%; top: 50%"><img src="images/spinner.gif"></div>
-<div style="position: fixed; right: 30px; top: 30px; padding: 20px; padding-left: 30px; padding-right: 30px; background-color: #eee; width: 350px">
+<div class="menu" style="position: fixed; right: 30px; top: 30px; padding: 20px; padding-left: 30px; padding-right: 30px; background-color: #eee; width: 350px">
     <div class="row-fluid">
         <h5>Total records {{ $totalRecords }}</h5>
     </div>
@@ -177,8 +177,8 @@ Type 1 Diabetes Visualization Prototype 1
         </div>
     </div>
 </div>
-<div>
-    Check Criteria
+<div class="menuExpand">
+    <button class="menuButton" type="button" style="width:350px" value="expand">-</button>
 </div>
 
 <div class="vizElement"></div>
